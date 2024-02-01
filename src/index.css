@@ -58,7 +58,7 @@ button:focus-visible {
     position: relative;
 }
 
-#result {
+.result {
     position: absolute;
     left: 0;
     top: 0;
