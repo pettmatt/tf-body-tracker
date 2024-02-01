@@ -19,8 +19,8 @@ async function trackPose(sourceElementId: string): Promise<poseDetection.Pose[]>
     const element: PixelInput = document.getElementById(sourceElementId) as HTMLImageElement | HTMLVideoElement
     const poses = await detector.estimatePoses(element)
 
-    if (poses.length !== 0)
-        console.log(poses[0].keypoints)
+    // if (poses.length !== 0)
+    //     console.log(poses[0].keypoints)
 
     return new Promise((resolve, reject) =>
         (poses.length > 0)
@@ -36,8 +36,8 @@ function visualizePose(poses: poseDetection.Pose[]) {
 
     if (score! < 0.3) return
 
-    visualizeHotspots(keypoints, context)
     connectHotspots(keypoints, context)
+    visualizeHotspots(keypoints, context)
 }
 
 function visualizeHotspots(keypoints: poseDetection.Keypoint[], context: CanvasRenderingContext2D) {
@@ -54,45 +54,65 @@ function visualizeHotspots(keypoints: poseDetection.Keypoint[], context: CanvasR
     }
 }
 
+type Bodyparts = {
+    arm: poseDetection.Keypoint[]
+    leg: poseDetection.Keypoint[]
+    unordered: poseDetection.Keypoint[]
+}
+
+function categorializeJoints(array: Bodyparts): Bodyparts {
+    const length = array.unordered.length
+    const arm = array.unordered.splice(0, length / 2)
+    const leg = array.unordered.splice(0, length / 2)
+    array.arm = arm
+    array.leg = leg
+
+    return array
+}
+
 function connectHotspots(keypoints: poseDetection.Keypoint[], context: CanvasRenderingContext2D) {
     // Connecting dots is easier when they are in the correct order, separating left and right sides as well as the head
     const remainingKeypoints = keypoints.slice(5, keypoints.length)
     // const head = keypoints.slice(0, 5)
-    const leftSide = []
-    const rightSide = []
+    let leftSide: Bodyparts = { arm: [], leg: [], unordered: [] }
+    let rightSide: Bodyparts = { arm: [], leg: [], unordered: [] }
 
+    // Separate the sides, makes it easier to connect joints later
     for (let i = 0; i < remainingKeypoints.length; i++) {
         if (i % 2 === 0) {
-            leftSide.push(remainingKeypoints[i])
+            leftSide.unordered.push(remainingKeypoints[i])
         } else {
-            rightSide.push(remainingKeypoints[i])
+            rightSide.unordered.push(remainingKeypoints[i])
         }
     }
 
-    const fullBody = [leftSide, rightSide]
+    leftSide = { ...categorializeJoints(leftSide) }
+    rightSide = { ...categorializeJoints(rightSide) }
 
-    console.log("here")
+    const fullBody = [leftSide, rightSide]
     
     for (let x = 0; x < fullBody.length; x++) {
-        const array = fullBody[x]
-        for (let i = 0; i < array.length; i++) {
-            if (array[i + 1] === undefined) break // preventing out of bounds error
-            
-            const score01 = array[i]?.score
-            const score02 = array[i + 1]?.score
-            console.log("score1", score01)
-            const color = pickColor((score01! < score02!) ? score01 : score02)
-            const { x: startX, y: startY } = array[i]
-            const { x: endX, y: endY } = array[i + 1]
-            console.log("coordinates S", startX, startY)
-            console.log("coordinates E", endX, endY)
-            
-            context.fillStyle = color
-            context.lineWidth = 2
-            context.beginPath()
-            context.moveTo(startX, startY)
-            context.lineTo(endX, endY)
-            context.stroke()
+        const sideArray: Bodyparts = fullBody[x]
+
+        for (const key in sideArray) {
+            const array = sideArray[key]
+            console.log("KEY", key, typeof key, array)
+
+            for (let i = 0; i + 1 < array.length; i++) {
+                // Maybe useful later
+                // const score01 = array[i]?.score
+                // const score02 = array[i + 1]?.score
+                // const color = pickColor((score01! < score02!) ? score01 : score02)
+                const { x: startX, y: startY } = array[i]
+                const { x: endX, y: endY } = array[i + 1]
+
+                // context.fillStyle = color
+                context.lineWidth = 2
+                context.beginPath()
+                context.moveTo(startX, startY)
+                context.lineTo(endX, endY)
+                context.stroke()
+            }
         }
     }
 }
