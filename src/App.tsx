@@ -96,10 +96,10 @@ function connectHotspots(keypoints: poseDetection.Keypoint[], context: CanvasRen
 
         for (const key in sideArray) {
             const array = sideArray[key]
-            console.log("KEY", key, typeof key, array)
 
+            // i + 1 prevents out of bounds error
             for (let i = 0; i + 1 < array.length; i++) {
-                // Maybe useful later
+                // Maybe useful later, if I want to color the line based on the score
                 // const score01 = array[i]?.score
                 // const score02 = array[i + 1]?.score
                 // const color = pickColor((score01! < score02!) ? score01 : score02)
@@ -142,12 +142,8 @@ function App() {
     return (
         <>
             <h1>ML enhanced fitness</h1>
-            <div>
-                <h2>Source</h2>
+            <div className="source-container">
                 <img id="source" src={ testPose } width={ 355.55 } height={ 200 }></img>
-            </div>
-            <div>
-                <h2>Result</h2>
                 <canvas id="result" width={ 355.55 } height={ 200 }></canvas>
             </div>
         </>
