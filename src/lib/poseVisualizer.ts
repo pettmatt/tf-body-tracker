@@ -1,14 +1,22 @@
 import * as poseDetection from "@tensorflow-models/pose-detection"
 
 export function visualizePose(poses: poseDetection.Pose[], resultId: string) {
-    const { keypoints, score } = poses[0] // Expecting only one person.
     const canvas = document.getElementById(resultId) as HTMLCanvasElement
     const context = canvas.getContext("2d")!
+    // Making sure the canvas is always empty.
+    // This approach has some issues;
+        // 1) The old tracking result is only removed when the next result is ready.
+        // Producing incorrect results.
+    context.clearRect(0, 0, canvas.width, canvas.height)
 
-    if (score == undefined || score < 0.3) return
+    for (let i = 0; i < poses.length; i++) {
+        const { keypoints, score } = poses[i]
 
-    connectHotspots(keypoints, context)
-    visualizeHotspots(keypoints, context)
+        if (score == undefined || score < 0.3) return
+
+        connectHotspots(keypoints, context)
+        visualizeHotspots(keypoints, context)
+    }
 }
 
 function visualizeHotspots(keypoints: poseDetection.Keypoint[], context: CanvasRenderingContext2D) {
