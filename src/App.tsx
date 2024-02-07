@@ -1,15 +1,15 @@
 import "./App.css"
-import videoSource from "/Nike Commercial - .mp4"
-import testPose from "/test-pose.jpg"
 import { useEffect, useRef } from "react"
 import * as poseDetection from "@tensorflow-models/pose-detection"
 import { trackPose, setupDetector } from "./lib/poseDetection"
 import { visualizePose } from "./lib/poseVisualizer"
+import { PixelInput } from "@tensorflow-models/pose-detection/dist/shared/calculators/interfaces/common_interfaces"
+import Webcam from "./webcam/Webcam"
 
-function hookPoseVisualizerToVideo(detector: poseDetection.PoseDetector, frameRate: number = 20) {
+function hookPoseVisualizerToVideo(source: PixelInput, detector: poseDetection.PoseDetector, frameRate: number = 20) {
     try {
         const interval = setInterval(async () => {
-            trackPose("video-source", detector)
+            trackPose(source, detector)
                 .then((poses: poseDetection.Pose[]): void => {
                     visualizePose(poses, "video-result")
                 })
@@ -25,56 +25,37 @@ function hookPoseVisualizerToVideo(detector: poseDetection.PoseDetector, frameRa
 
 function App() {
     const detectorRef = useRef<poseDetection.PoseDetector | null>(null)
+    const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
     useEffect(() => {
-        setupDetector()
-            .then((poseDetector) => {
-                detectorRef.current = poseDetector
-            })
-
-        if (detectorRef.current) {
-            trackPose("image-source", detectorRef.current)
-                .then((poses: poseDetection.Pose[]): void => {
-                    visualizePose(poses, "image-result")
-                })
-                .catch((rejected): void => {
-                    if (typeof rejected === "number")
-                        console.warn("Couldn't track a pose from the image. Pose status:", rejected)
-                    else
-                        console.warn("Possible error occured during the image pose tracking.", rejected as Error)
+        if (!detectorRef.current) {
+            setupDetector()
+                .then((poseDetector) => {
+                    detectorRef.current = poseDetector
                 })
         }
+
+        // if (detectorRef.current) {
+        //     trackPose(webcamRef.current, detectorRef.current)
+        //         .then((poses: poseDetection.Pose[]): void => {
+        //             visualizePose(poses, "image-result")
+        //         })
+        //         .catch((rejected): void => {
+        //             if (typeof rejected === "number")
+        //                 console.warn("Couldn't track a pose from the image. Pose status:", rejected)
+        //             else
+        //                 console.warn("Possible error occured during the image pose tracking.", rejected as Error)
+        //         })
+        // }
     }, [detectorRef])
 
     return (
         <>
-            <h1>Tracking poses</h1>
-            <h2>Image source</h2>
-            <div className="source-container">
-                <img id="image-source" src={ testPose } width={ 355.55 } height={ 200 }></img>
-                <canvas id="image-result" className="result" width={ 355.55 } height={ 200 }></canvas>
-            </div>
-            <h2>Video source</h2>
-            <div className="source-container">
-                <video id="video-source" width={ 355.55 } height={ 200 } typeof="video/mp4" autoPlay muted 
-                    src={ videoSource } onPlaying={ () => {
-                        let triedCount = 0
-
-                        const interval = setInterval(() => {
-                            if (detectorRef.current)
-                                hookPoseVisualizerToVideo(detectorRef.current)
-
-                            if (triedCount > 3)
-                                clearInterval(interval)
-
-                            triedCount++
-                        }, 1000)
-                    } }
-                >
-                    <p>Sorry, this browser doesn't support HTML videos.</p>
-                </video>
-                <canvas id="video-result" className="result" width={ 355.55 } height={ 200 }></canvas>
-            </div>
+        <h1>Tracking poses</h1>
+        <div className="source-container">
+            <h2>Web cam source</h2>
+            <Webcam width={ 500 } height={ 500 } />
+        </div>
         </>
     )
 }

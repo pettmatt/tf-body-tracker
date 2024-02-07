@@ -2,14 +2,12 @@ import { PixelInput } from "@tensorflow-models/pose-detection/dist/shared/calcul
 import "@tensorflow/tfjs-backend-webgl"
 import * as poseDetection from "@tensorflow-models/pose-detection"
 
-export async function trackPose(sourceElementId: string, detector: poseDetection.PoseDetector): Promise<poseDetection.Pose[]> {
-    const element: PixelInput = document.getElementById(sourceElementId) as HTMLImageElement | HTMLVideoElement
-
+export async function trackPose(input: PixelInput, detector: poseDetection.PoseDetector): Promise<poseDetection.Pose[]> {
     const config: poseDetection.BlazePoseTfjsEstimationConfig = {
         maxPoses: 1
     }
 
-    const poses = await detector.estimatePoses(element, config)
+    const poses = await detector.estimatePoses(input, config)
 
     return new Promise((resolve) =>
         resolve(poses)
