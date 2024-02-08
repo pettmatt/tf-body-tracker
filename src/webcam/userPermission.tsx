@@ -3,7 +3,6 @@ import { useEffect, useState } from "react"
 function FetchUserDeviceStream(): MediaStream | null | undefined {
     const [stream, setStream] = useState<MediaStream | null | undefined>(null)
 
-
     useEffect(() => {
         if (!stream) {
             fetchWebcamStream()
@@ -15,7 +14,7 @@ function FetchUserDeviceStream(): MediaStream | null | undefined {
                 })
             }
         }
-    })
+    }, [stream])
 
     function fetchWebcamStream() {
         navigator.mediaDevices.getUserMedia({ video: true })
@@ -23,7 +22,7 @@ function FetchUserDeviceStream(): MediaStream | null | undefined {
                 setStream(stream)
             })
             .catch((error: DOMException) => {
-                console.error(error)
+                console.error("UserPermission;", error)
                 setStream(undefined)
             })
     }

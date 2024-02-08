@@ -1,24 +1,25 @@
-import { useRef } from "react"
+import { MutableRefObject } from "react"
 import WebcamAvailabilityMsg from "./Webcam-availability-msg"
 import FetchUserDeviceStream from "./userPermission"
 
-function play(videoRef: React.MutableRefObject<HTMLVideoElement | null>) {
+function play(videoRef: MutableRefObject<HTMLVideoElement | null | undefined>) {
     videoRef.current?.play()
 }
 
 interface Props {
     width: number
     height: number
+    webcamVideo: MutableRefObject<HTMLVideoElement | null>
 }
 
-function Webcam(props: Props) {
-    const video = useRef<HTMLVideoElement | null>(null)
-    const stream = FetchUserDeviceStream()
 
-    if (stream && !video.current) {
-        video.current = new HTMLVideoElement() 
-        video.current.srcObject = stream
-    }
+
+function Webcam(props: Props) {
+    const stream = FetchUserDeviceStream()
+    const video = props.webcamVideo
+    
+    if (stream)
+        video.current!.srcObject = stream
 
     return (
         <video ref={ video } onCanPlay={ () => play(video) } width={ props.width } height={ props.height } autoPlay muted playsInline>
