@@ -3,10 +3,6 @@ import * as poseDetection from "@tensorflow-models/pose-detection"
 export function visualizePose(poses: poseDetection.Pose[], resultId: string) {
     const canvas = document.getElementById(resultId) as HTMLCanvasElement
     const context = canvas.getContext("2d")!
-    // Making sure the canvas is always empty.
-    // This approach has some issues;
-        // 1) The old tracking result is only removed when the next result is ready.
-        // Producing incorrect results.
     context.clearRect(0, 0, canvas.width, canvas.height)
 
     for (let i = 0; i < poses.length; i++) {
