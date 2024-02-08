@@ -1,60 +1,36 @@
 import "./App.css"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import * as poseDetection from "@tensorflow-models/pose-detection"
-import { trackPose, setupDetector } from "./lib/poseDetection"
-import { visualizePose } from "./lib/poseVisualizer"
-import { PixelInput } from "@tensorflow-models/pose-detection/dist/shared/calculators/interfaces/common_interfaces"
+import { setupDetector } from "./lib/poseDetection"
+import { hookPoseVisualizerToVideo } from "./lib/poseHook"
 import Webcam from "./webcam/Webcam"
 
-function hookPoseVisualizerToVideo(source: PixelInput, detector: poseDetection.PoseDetector, frameRate: number = 20) {
-    try {
-        const interval = setInterval(async () => {
-            trackPose(source, detector)
-                .then((poses: poseDetection.Pose[]): void => {
-                    visualizePose(poses, "video-result")
-                })
-                .catch((error: Error): void => {
-                    console.warn("Possible error occured during the video pose tracking.", error)
-                })
-            return () => clearInterval(interval)
-        }, Math.round(1000 / frameRate))
-    } catch (error) {
-        console.log("Video pose visualizer hook failed.", error)
-    }
-}
-
 function App() {
-    const detectorRef = useRef<poseDetection.PoseDetector | null>(null)
-    const canvasRef = useRef<HTMLCanvasElement | null>(null)
+    const detector = useRef<poseDetection.PoseDetector | null>(null)
+    const webcamElement = useRef<HTMLVideoElement | null>(null)
+    const [hook, setHook] = useState<number | null>(null)
 
     useEffect(() => {
-        if (!detectorRef.current) {
+        if (!detector.current) {
             setupDetector()
                 .then((poseDetector) => {
-                    detectorRef.current = poseDetector
+                    detector.current = poseDetector
                 })
         }
 
-        // if (detectorRef.current) {
-        //     trackPose(webcamRef.current, detectorRef.current)
-        //         .then((poses: poseDetection.Pose[]): void => {
-        //             visualizePose(poses, "image-result")
-        //         })
-        //         .catch((rejected): void => {
-        //             if (typeof rejected === "number")
-        //                 console.warn("Couldn't track a pose from the image. Pose status:", rejected)
-        //             else
-        //                 console.warn("Possible error occured during the image pose tracking.", rejected as Error)
-        //         })
-        // }
-    }, [detectorRef])
+        if (!hook && detector.current && webcamElement.current) {
+            const hook = hookPoseVisualizerToVideo("webcam-result", webcamElement.current, detector.current)
+            setHook(hook)
+        }
+    }, [detector, hook])
 
     return (
         <>
         <h1>Tracking poses</h1>
         <div className="source-container">
             <h2>Web cam source</h2>
-            <Webcam width={ 500 } height={ 500 } />
+            <Webcam width={ 500 } height={ 375 } webcamVideo={ webcamElement } />
+            <canvas id="webcam-result" width={ 500 } height={ 375 }></canvas>
         </div>
         </>
     )
