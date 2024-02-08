@@ -1,27 +1,39 @@
 import { useEffect, useRef, useState } from "react"
 import * as poseDetection from "@tensorflow-models/pose-detection"
-import { setupDetector } from "../lib/poseDetection"
+import * as handDetector from "@tensorflow-models/hand-pose-detection"
+import { setupBodyDetector } from "../lib/poseDetection"
+import { setupHandDetector } from "../lib/handPoseDetection"
 import Webcam from "../webcam/Webcam"
 import { hookPoseVisualizerToVideo } from "../lib/poseHook"
 
+interface detectors {
+    body: poseDetection.PoseDetector | null
+    hands: handDetector.HandDetector | null
+}
+
 function PoseTracking() {
-    const detector = useRef<poseDetection.PoseDetector | null>(null)
+    const detectors = useRef<detectors>()
     const webcamElement = useRef<HTMLVideoElement | null>(null)
-    const [hook, setHook] = useState<number | null>(null)
+    const [visualizerHook, setVisualizerHook] = useState<number | null>(null)
 
     useEffect(() => {
-        if (!detector.current) {
-            setupDetector()
+        if (!detectors.current) {
+            setupBodyDetector()
                 .then((poseDetector) => {
-                    detector.current = poseDetector
+                    detectors.current!.body = poseDetector
+                })
+
+            setupHandDetector
+                .then((handDetector) => {
+                    detectors.current!.hands = handDetector
                 })
         }
 
-        if (!hook && detector.current && webcamElement.current) {
-            const hook = hookPoseVisualizerToVideo("webcam-result", webcamElement.current, detector.current)
-            setHook(hook)
+        if (!visualizerHook && detectors.current?.body && webcamElement.current) {
+            const hook = hookPoseVisualizerToVideo("webcam-result", webcamElement.current, detectors.current.body)
+            setVisualizerHook(hook)
         }
-    }, [detector, hook])
+    }, [detectors, visualizerHook])
 
     return (
         <div className="source-container">
