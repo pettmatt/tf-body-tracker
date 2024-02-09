@@ -1,4 +1,4 @@
-import { MutableRefObject } from "react"
+import { MutableRefObject, useEffect } from "react"
 import WebcamAvailabilityMsg from "./Webcam-availability-msg"
 import FetchUserDeviceStream from "./userPermission"
 
@@ -12,19 +12,21 @@ interface Props {
     webcamVideo: MutableRefObject<HTMLVideoElement | null>
 }
 
-
-
 function Webcam(props: Props) {
     const stream = FetchUserDeviceStream()
     const video = props.webcamVideo
-    
-    if (stream)
-        video.current!.srcObject = stream
+
+    useEffect(() => {
+        if (stream)
+            video.current!.srcObject = stream
+    })
 
     return (
+        <>
+        <WebcamAvailabilityMsg stream={ stream } />
         <video ref={ video } onCanPlay={ () => play(video) } width={ props.width } height={ props.height } autoPlay muted playsInline>
-            <WebcamAvailabilityMsg stream={ stream } />
         </video>
+        </>
     )
 }
 

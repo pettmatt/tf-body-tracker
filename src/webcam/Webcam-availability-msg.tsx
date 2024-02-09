@@ -9,9 +9,13 @@ function WebcamAvailabilityMsg({ stream }: Props) {
         message = "No permission given to use web cam."
     else if (stream === undefined)
         message = "No webcam available."
-    else message = "The browser doesn't support HTML video element."
+    else message = ""
 
-    return <p>{ message }</p>
+    return (
+        <div id="webcam-status-message" className={ (message.length > 0) ? "container-color-warning" : "" }>
+            <p>{ message }</p>
+        </div>
+    )
 }
 
 export default WebcamAvailabilityMsg
