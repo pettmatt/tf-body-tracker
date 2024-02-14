@@ -5,11 +5,8 @@ import { setupBodyDetector } from "../lib/detection/poseDetection"
 // import { setupHandDetector } from "../lib/handPoseDetection"
 import Webcam from "../webcam/Webcam"
 import { hookPoseVisualizerToVideo } from "../lib/detection/poseHook"
-
-// interface detectors {
-//     body: poseDetection.PoseDetector | null
-//     hands: handDetector.HandDetector | null
-// }
+import ToggleWrapper from "../wrappers/Toggle-wrapper"
+import "./poseTracking.css"
 
 function PoseTracking() {
     const detectors = useRef<poseDetection.PoseDetector | null>(null)
@@ -26,13 +23,13 @@ function PoseTracking() {
         }
 
         if (!visualizerHook && detectors.current && webcamElement.current) {
-            const hooks = hookPoseVisualizerToVideo("webcam-result", webcamElement.current, detectors.current, handleReps)
+            const hooks = hookPoseVisualizerToVideo("webcam-result", webcamElement.current, detectors.current, handleReps(reps))
 
             if (hooks)
                 setVisualizerHook(hooks.interval)
         }
 
-        function handleReps() {
+        function handleReps(reps: number) {
             let value = reps
             setReps(value++)
             console.log("Triggered, reps", reps)
@@ -41,9 +38,18 @@ function PoseTracking() {
 
     return (
         <div className="source-container">
-            reps { reps }
-            <Webcam width={ 500 } height={ 375 } webcamVideo={ webcamElement } />
-            <canvas id="webcam-result" width={ 500 } height={ 375 }></canvas>
+            <ToggleWrapper>
+                <span id="rep-status">Status: Passable | Failure | Good | Excelent</span>
+            </ToggleWrapper>
+            <ToggleWrapper>
+                <span id="reps-index">Reps: { reps }</span>
+            </ToggleWrapper>
+            <div className="pose-tracking-container">
+                <div className="pinned">
+                    <Webcam width={ 500 } height={ 375 } webcamVideo={ webcamElement } />
+                </div>
+                <canvas id="webcam-result" className="focus" width={ 500 } height={ 375 }></canvas>
+            </div>
         </div>
     )
 }

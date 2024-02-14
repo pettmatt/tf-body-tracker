@@ -1,0 +1,20 @@
+.pose-tracking-container {
+    position: relative;
+}
+
+.pose-tracking-container > .focus {
+    position: relative;
+}
+
+.pose-tracking-container > .pinned {
+    z-index: 50;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: calc(100vw / 3);
+}
+
+.pose-tracking-container > .pinned:last {
+    border: 0.25rem solid black;
+    border-radius: 5.25em;
+}
