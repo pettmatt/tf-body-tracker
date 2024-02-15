@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import * as poseDetection from "@tensorflow-models/pose-detection"
-// import * as handDetector from "@tensorflow-models/hand-pose-detection"
 import { setupBodyDetector } from "../lib/detection/poseDetection"
+// import * as handDetector from "@tensorflow-models/hand-pose-detection"
 // import { setupHandDetector } from "../lib/handPoseDetection"
 import Webcam from "../webcam/Webcam"
 import { hookPoseVisualizerToVideo } from "../lib/detection/poseHook"
@@ -12,7 +12,7 @@ function PoseTracking() {
     const detectors = useRef<poseDetection.PoseDetector | null>(null)
     const webcamElement = useRef<HTMLVideoElement | null>(null)
     const [visualizerHook, setVisualizerHook] = useState<number | null>(null)
-    const [reps, setReps] = useState(0)
+    const [reps, setReps] = useState<number>(0)
 
     useEffect(() => {
         if (!detectors.current) {
@@ -22,24 +22,26 @@ function PoseTracking() {
                 })
         }
 
-        if (!visualizerHook && detectors.current && webcamElement.current) {
-            const hooks = hookPoseVisualizerToVideo("webcam-result", webcamElement.current, detectors.current, handleReps(reps))
+        if (webcamElement.current && detectors.current) {
+            const hooks = hookPoseVisualizerToVideo(
+                "webcam-result", webcamElement.current, detectors.current, () => setReps(reps + 1)
+            )
 
             if (hooks)
                 setVisualizerHook(hooks.interval)
         }
 
-        function handleReps(reps: number) {
-            let value = reps
-            setReps(value++)
-            console.log("Triggered, reps", reps)
+        return () => {
+            if (visualizerHook)
+                clearInterval(visualizerHook)
+            detectors.current?.dispose
         }
-    }, [detectors, visualizerHook, reps])
+    }, [reps])
 
     return (
         <div className="source-container">
             <ToggleWrapper>
-                <span id="rep-status">Status: Passable | Failure | Good | Excelent</span>
+                <span id="rep-status">Status: Failure | Passable | Good | Excelent</span>
             </ToggleWrapper>
             <ToggleWrapper>
                 <span id="reps-index">Reps: { reps }</span>

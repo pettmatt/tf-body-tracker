@@ -6,9 +6,9 @@ function WebcamAvailabilityMsg({ stream }: Props) {
     let message = null
 
     if (stream === null)
-        message = "No permission given to use web cam."
+        message = "No permission given to use device's camera."
     else if (stream === undefined)
-        message = "No webcam available."
+        message = "No camera available."
     else message = ""
 
     return (

@@ -1,24 +1,15 @@
-import { useEffect, useState } from "react"
+import { useEffect, Dispatch, SetStateAction } from "react"
 
-interface Props {
-    trigger: boolean
+type Props = {
+    hook: [number, Dispatch<SetStateAction<number>>]
 }
 
-function RepTracking({ trigger }: Props) {
-    const [childTrigger, setChildTrigger] = useState<boolean>(trigger)
-    const [reps, setReps] = useState<number>(0)
+function RepTracking({ hook }: Props) {
+    const [reps, setReps] = hook
 
     useEffect(() => {
-        if (trigger) {
-            handleReps()
-            setChildTrigger(!childTrigger)
-        }
-
-        function handleReps() {
-            let count = reps
-            setReps(count++)
-        }
-    }, [trigger, childTrigger, reps])
+        setReps(reps + 1)
+    }, [reps, setReps])
 
     return (
         <p>Reps: { reps }</p>
