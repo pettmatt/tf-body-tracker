@@ -3,7 +3,7 @@ import PoseTracking from "./pages/tf-pose-tracking/PoseTracking"
 import { useState, createContext, useContext } from "react"
 import "./App.css"
 
-const MenuContext = createContext<number>(0)
+const MenuContext = createContext(0)
 
 function App() {
     const [menu, setMenu] = useState(0)
@@ -14,7 +14,6 @@ function App() {
 
             { (menu === 0) && (
                 <>
-                <h1>Menu</h1>
                 <button onClick={ () => setMenu(1) }>Pose tracking</button>
                 <button onClick={ () => setMenu(2) }>Manage excercises</button>
                 </>
