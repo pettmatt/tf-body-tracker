@@ -8,6 +8,7 @@ export type Excercise = {
 
 type Move = {
     name: string
+    type: string
     sets: string
     repsInSet?: number | undefined
     breakBetweenSets?: number | undefined
